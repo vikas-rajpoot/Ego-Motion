@@ -5,3 +5,6 @@ results
 vikas_data
 __pycache__
 .vscode 
+.cache
+docs
+mkdocs.yml 
