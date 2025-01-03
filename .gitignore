@@ -8,3 +8,4 @@ __pycache__
 .cache
 docs
 mkdocs.yml 
+captured_frames 
