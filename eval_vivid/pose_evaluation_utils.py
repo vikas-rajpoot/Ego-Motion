@@ -12,6 +12,10 @@ class test_framework_VIVID(object):
 
     def generator(self):
         for img_list, pose_list, sample_list in zip(self.img_files, self.poses, self.sample_indices):
+            print('\033[92m' + 'img_list : ', img_list) 
+            print('pose_list : ', pose_list)
+            print('sample_list : ', sample_list, '\033[0m') 
+            
             for snippet_indices in sample_list:
                 if self.input_type =='RGB':
                     imgs = [imread(img_list[i]).astype(np.float32) for i in snippet_indices]

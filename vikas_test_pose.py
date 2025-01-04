@@ -12,36 +12,33 @@ from loss.inverse_warp import pose_vec2mat
 from utils.custom_transforms import Celsius2Raw
 
 
-parser = argparse.ArgumentParser(description='Script for PoseNet testing with corresponding groundTruth from KITTI Odometry',
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)   
-parser.add_argument("--pretrained-posenet", default="/home/vk/03/ThermalSfMLearner/checkpoints/THERMAL-SFM-LEARNER/vivid_rgbt_indoor/exp_pose_pose_model_best.pth.tar", 
-                    required=False, type=str, help="pretrained PoseNet path") 
-parser.add_argument("--img-height", default=256, type=int, help="Image height") 
-parser.add_argument("--img-width", default=320, type=int, help="Image width") 
-parser.add_argument("--no-resize", action='store_true', help="no resizing is done") 
-parser.add_argument("--dataset-dir", default="/home/vk/03/ThermalSfMLearner/ProcessedData", type=str, help="Dataset directory") 
-parser.add_argument('--sequence-length', type=int, metavar='N', help='sequence length for testing', default=5) 
-parser.add_argument("--sequences", default=['indoor_aggresive_dark'], type=str, nargs='*', help="sequences to test") 
-parser.add_argument("--output-dir", default=None, type=str, help="Output directory for saving predictions in a big 3D numpy file")
-parser.add_argument('--resnet-layers', required=False, type=int, default=18, choices=[18, 50], help='depth network architecture.')
-parser.add_argument('--input', type=str, choices=['RGB', 'T'], default='T', help='input data type') 
-parser.add_argument('--scene_type', type=str, choices=['indoor', 'outdoor'], default='indoor', required=False)  
+pretrained_posenet = "/home/vk/03/ThermalSfMLearner/checkpoints/THERMAL-SFM-LEARNER/vivid_rgbt_indoor/exp_pose_pose_model_best.pth.tar" 
+img_height = 256 
+img_width = 320 
+no_resize = False 
+dataset_dir = "/home/vk/03/ThermalSfMLearner/ProcessedData"
+sequence_length = 5 
+sequences = ['indoor_aggresive_dark'] 
+output_dir = None 
+resnet_layers = 18 
+input = "T" 
+scene_type = "indoor"
 
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-def load_tensor_image(img, args):
+def load_tensor_image(img):
     h,w,_ = img.shape
-    if (h != args.img_height or w != args.img_width):
-        img = imresize(img, (args.img_height, args.img_width)).astype(np.float32)
+    if (h != img_height or w != img_width):
+        img = imresize(img, (img_height, img_width)).astype(np.float32)
     img = np.transpose(img, (2, 0, 1))
     tensor_img = ((torch.from_numpy(img).unsqueeze(0)/255-0.45)/0.225).to(device)
     return tensor_img
 
-def load_tensor_Timage_indoor(img, args):
+def load_tensor_Timage_indoor(img):
     h,w,_ = img.shape
-    if (h != args.img_height or w != args.img_width):
-        img = imresize(img, (args.img_height, args.img_width)).astype(np.float32)
+    if (h != img_height or w != img_width):
+        img = imresize(img, (img_height, img_width)).astype(np.float32)
     img = np.transpose(img, (2, 0, 1))
     Dmin = Celsius2Raw(10)
     Dmax = Celsius2Raw(40)
@@ -51,10 +48,10 @@ def load_tensor_Timage_indoor(img, args):
     tensor_img = ((img.unsqueeze(0)-0.45)/0.225).to(device)
     return tensor_img
 
-def load_tensor_Timage_outdoor(img, args):
+def load_tensor_Timage_outdoor(img ):
     h,w,_ = img.shape
-    if (h != args.img_height or w != args.img_width):
-        img = imresize(img, (args.img_height, args.img_width)).astype(np.float32)
+    if (h != img_height or w != img_width):
+        img = imresize(img, (img_height, img_width)).astype(np.float32)
     img = np.transpose(img, (2, 0, 1))
     Dmin = Celsius2Raw(0)
     Dmax = Celsius2Raw(30)
@@ -63,42 +60,32 @@ def load_tensor_Timage_outdoor(img, args):
     img = (torch.from_numpy(img).float() - Dmin)/(Dmax - Dmin) 
     tensor_img = ((img.unsqueeze(0)-0.45)/0.225).to(device)
     return tensor_img
-    
+
+
 @torch.no_grad()
 def main():
-    args = parser.parse_args()
+    # only for the thermal images. 
+    pose_net = models.PoseResNet(resnet_layers, False, num_channel=1).to(device)
 
-    # load models 
-    if args.input == 'RGB':
-        pose_net = models.PoseResNet(args.resnet_layers, False, num_channel=3).to(device)
-    else : 
-        pose_net = models.PoseResNet(args.resnet_layers, False, num_channel=1).to(device)
-
-
-    weights = torch.load(args.pretrained_posenet, map_location=torch.device('cpu')) 
+    weights = torch.load(pretrained_posenet, map_location=torch.device('cpu')) 
     pose_net.load_state_dict(weights['state_dict'], strict=False)
     pose_net.eval() 
 
     seq_length = 5 
 
-
-    if args.input == 'RGB':
-            load_tensor_img = load_tensor_image
-    elif args.input == 'T':
-        if args.scene_type == 'indoor' : #indoor 
-            load_tensor_img = load_tensor_Timage_indoor
-        elif args.scene_type == 'outdoor':
-            load_tensor_img = load_tensor_Timage_outdoor
+    global dataset_dir, output_dir, sequences, input 
+    # only for the thermal images.
+    load_tensor_img = load_tensor_Timage_indoor
 
     # load data loader 
     from eval_vivid.pose_evaluation_utils import test_framework_VIVID as test_framework
-    dataset_dir = Path(args.dataset_dir) 
-    framework = test_framework(dataset_dir, args.sequences, seq_length=seq_length, step=1, input_type=args.input)
+    dataset_dir = Path(dataset_dir) 
+    framework = test_framework(dataset_dir, sequences, seq_length=seq_length, step=1, input_type=input)
 
     print('{} snippets to test'.format(len(framework))) 
     errors = np.zeros((len(framework), 2), np.float32)
-    if args.output_dir is not None:
-        output_dir = Path(args.output_dir)
+    if output_dir is not None:
+        output_dir = Path(output_dir)
         output_dir.makedirs_p()
         predictions_array = np.zeros((len(framework), seq_length, 3, 4))
 
@@ -106,7 +93,7 @@ def main():
         imgs = sample['imgs']
         squence_imgs = []
         for i, img in enumerate(imgs):
-            img = load_tensor_img(img, args)
+            img = load_tensor_img(img) 
             squence_imgs.append(img)
 
         global_pose = np.eye(4)
@@ -121,11 +108,12 @@ def main():
             
             pose_mat = np.vstack([pose_mat, np.array([0, 0, 0, 1])]) 
             global_pose = global_pose @  np.linalg.inv(pose_mat) 
-            poses.append(global_pose[0:3, :]) 
+            poses.append(global_pose[0:3, :])  
 
         final_poses = np.stack(poses, axis=0) 
+        print("\033[92m [INFO] \033[0m final_poses : ", final_poses.shape)  
         
-        if args.output_dir is not None:
+        if output_dir is not None:
             predictions_array[j] = final_poses
 
         ATE, RE = compute_pose_error(sample['poses'], final_poses)
@@ -140,7 +128,7 @@ def main():
     print("mean \t {:10.4f}, {:10.4f}".format(*mean_errors))
     print("std \t {:10.4f}, {:10.4f}".format(*std_errors))
 
-    if args.output_dir is not None:
+    if output_dir is not None:
         np.save(output_dir/'predictions.npy', predictions_array)
 
 
@@ -173,7 +161,6 @@ def compute_pose(pose_net, tgt_img, ref_imgs):
 
 if __name__ == '__main__':
     main()
-
 
 
 
