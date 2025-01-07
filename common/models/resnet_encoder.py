@@ -14,6 +14,18 @@ import torchvision.models as models
 import torch.utils.model_zoo as model_zoo
 import pdb
 
+model_urls = {
+    'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
+    'resnet34': 'https://download.pytorch.org/models/resnet34-333f7ec4.pth',
+    'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth',
+    'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
+    'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
+}
+
+# Use the dictionary to load the model
+# loaded = model_zoo.load_url(model_urls['resnet{}'.format(num_layers)]) 
+
+
 class ResNetMultiImageInput(models.ResNet):
     """Constructs a resnet model with varying number of input images.
     Adapted from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
@@ -52,7 +64,7 @@ def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1, nu
     model = ResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images, num_channel=num_channel)
 
     if pretrained:
-        loaded = model_zoo.load_url(models.resnet.model_urls['resnet{}'.format(num_layers)])
+        loaded = model_zoo.load_url(model_urls['resnet{}'.format(num_layers)])
         if num_channel == 3:
             loaded['conv1.weight'] = torch.cat([loaded['conv1.weight']] * num_input_images, 1) / num_input_images
         else :

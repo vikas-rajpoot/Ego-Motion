@@ -246,13 +246,13 @@ def main():
     for epoch in range(args.epochs):
         logger.epoch_bar.update(epoch)
 
-        # train for one epoch
-        logger.reset_train_bar()
+        # train for one epoch 
+        logger.reset_train_bar() 
 
         train_loss = train(args, train_loader, disp_net, pose_net, optimizer, args.epoch_size, logger, training_writer)
         logger.train_writer.write(' * Avg Loss : {:.3f}'.format(train_loss))
 
-        # evaluate on validation set
+        # evaluate on validation set 
         logger.reset_valid_bar()
         if args.with_gt:
             pose_errors, pose_error_names = validate_pose_with_gt(args, val_pose_loader, pose_net, epoch, logger, output_writers)
@@ -371,7 +371,7 @@ def train(args, train_loader, disp_net, pose_net, optimizer, epoch_size, logger,
             train_writer.add_scalar('geometry_consistency_loss_rgb'    , loss_5.item(), n_iter)
             train_writer.add_scalar('total_loss', loss.item(), n_iter)
 
-        # record loss and EPE
+        # record loss and EPE 
         losses.update(loss.item(), args.batch_size)
 
         # compute gradient and do Adam step

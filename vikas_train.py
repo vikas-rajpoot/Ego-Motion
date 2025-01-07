@@ -107,13 +107,13 @@ def main():
     if args.log_output:
         for i in range(3):
             output_writers.append(SummaryWriter(args.save_path/'valid'/str(i)))
-
-    # set dataloader
+    
+    # set dataloader 
     if args.scene_type == 'indoor' :  # indoor
         # args.rgb_ssim = 0.85 # 'weight for RGB ssim scaling factor'
         # args.thr_ssim = 0.15 # 'weight for T ssim scaling factor'
         # args.thermal_weight = 0.25
-        # args.rgb_weight = 1.0
+        # args.rgb_weight = 1.0 
         args.temp_min = 10
         args.temp_max = 40
         args.vis_depth_max = 4
@@ -126,15 +126,16 @@ def main():
         args.temp_max = 30
         args.vis_depth_max = 10
 
+    # set data loader 
     ArrToTen_rgb = custom_transforms.ArrayToTensor()
-    ArrToTen_thr = custom_transforms.ArrayToTensor_Thermal(args.temp_min, args.temp_max)
+    ArrToTen_thr = custom_transforms.ArrayToTensor_Thermal(args.temp_min, args.temp_max) 
     TenColorize = custom_transforms.TensorColorize()
     normalize = custom_transforms.Normalize(mean=[0.45, 0.45, 0.45], std=[0.225, 0.225, 0.225])
 
     train_transform_share = custom_transforms.Compose([
         custom_transforms.RandomHorizontalFlip(),
         custom_transforms.RandomScaleCrop(),
-    ])
+    ]) 
 
     transform_thr_clr  = custom_transforms.Compose([ArrToTen_thr, TenColorize, normalize])
     transform_thr      = custom_transforms.Compose([ArrToTen_thr, normalize])
@@ -153,8 +154,11 @@ def main():
         interval     = args.interval,
         train        = True
     )
-
-    # if no Groundtruth is avalaible, Validation set is the same type as training set to measure photometric loss from warping
+    new_sample = train_set[0] 
+    print("pause ") 
+        
+    # if no Groundtruth is avalaible, Validation set is the same type as training set to measure photometric loss from warping 
+    val_pose_set = None 
     if args.with_gt:
         from dataloader.VIVID_validation_folders import ValidationSet, ValidationSetPose
         val_set = ValidationSet(
@@ -174,14 +178,14 @@ def main():
     else:
         val_set = SequenceFolder(
             args.data,
-            tf_share=custom_transforms.Compose(),
+            tf_share=custom_transforms.Compose,
             tf_thr_color = transform_thr_clr,
             tf_thr       = transform_thr,
             tf_rgb       = transform_rgb,
             seed         = args.seed,
             sequence_length = args.sequence_length,
             scene_type   = args.scene_type,
-            Interval     = args.interval,
+            interval     = args.interval,
             train        = False
         )
 
@@ -239,7 +243,15 @@ def main():
     with open(args.save_path/args.log_full, 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter='\t')
         writer.writerow(['train_loss', 'photo_loss', 'smooth_loss', 'geometry_consistency_loss'])
-
+        
+    
+    
+    print('\033[92m [INFO] \033[0m Training started at {}'.format(datetime.datetime.now().strftime("%m-%d-%H:%M")))  
+    print('\033[92m [INFO] \033[0m Training for {} epochs'.format(args.epochs)) 
+    print('\033[92m [INFO] \033[0m Training on {} samples'.format(len(train_loader)))
+    print('\033[92m [INFO] \033[0m Validation on {} samples'.format(type(val_pose_loader))) 
+    # print('\033[92m [INFO] \033[0m Validating on {} samples'.format(len(val_pose_loader))) 
+    
     logger = TermLogger(n_epochs=args.epochs, train_size=min(len(train_loader), args.epoch_size), valid_size=len(val_pose_loader))
     logger.epoch_bar.start()
 
@@ -313,10 +325,10 @@ def train(args, train_loader, disp_net, pose_net, optimizer, epoch_size, logger,
 
     # switch to train mode
     disp_net.train()
-    pose_net.train()
+    pose_net.train() 
 
-    end = time.time()
-    logger.train_bar.update(0)
+    end = time.time() 
+    logger.train_bar.update(0) 
 
 
     for i, (tgt_thr_img, ref_thr_imgs, tgt_thr_img_clr, ref_thr_img_clr, tgt_rgb_img, ref_rgb_imgs, \
@@ -324,7 +336,7 @@ def train(args, train_loader, disp_net, pose_net, optimizer, epoch_size, logger,
         log_losses = i > 0 and n_iter % args.print_freq == 0
 
         # measure data loading time
-        data_time.update(time.time() - end)
+        data_time.update(time.time() - end) 
 
         tgt_thr_img = tgt_thr_img.to(device)
         ref_thr_imgs = [img.to(device) for img in ref_thr_imgs]
