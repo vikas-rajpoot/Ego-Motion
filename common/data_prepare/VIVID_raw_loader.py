@@ -172,7 +172,7 @@ class VIVIDRawLoader(object):
         depth = np.load(depth_file)
 
         return depth
-
+    
     def read_raw_calib_file(self, filepath):
         # From https://github.com/utiasSTARS/pykitti/blob/master/pykitti/utils.py
         """Read in a calibration file and parse into a dictionary."""

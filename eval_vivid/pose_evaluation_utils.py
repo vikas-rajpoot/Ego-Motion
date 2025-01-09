@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 
 class test_framework_VIVID(object):
+    
     def __init__(self, root, sequence_set, seq_length=3, step=1, input_type='RGB'):
         self.root = root
         self.input_type = input_type
@@ -12,9 +13,10 @@ class test_framework_VIVID(object):
 
     def generator(self):
         for img_list, pose_list, sample_list in zip(self.img_files, self.poses, self.sample_indices):
-            print('\033[92m' + 'img_list : ', img_list) 
-            print('pose_list : ', pose_list)
-            print('sample_list : ', sample_list, '\033[0m') 
+            # print('\033[92m' + 'img_list : ', img_list) 
+            # print('pose_list : ', pose_list) 
+            # print('sample_list : ', sample_list, '\033[0m')  
+            
             
             for snippet_indices in sample_list:
                 if self.input_type =='RGB':
@@ -23,7 +25,7 @@ class test_framework_VIVID(object):
                     imgs = [np.expand_dims(imread(img_list[i]).astype(np.float32), axis=2) for i in snippet_indices]
 
                 poses = np.stack([pose_list[i] for i in snippet_indices])
-                first_pose = poses[0]
+                first_pose = poses[0] 
                 poses[:,:,-1] -= first_pose[:,-1]
                 compensated_poses = np.linalg.inv(first_pose[:,:3]) @ poses
 
@@ -31,7 +33,7 @@ class test_framework_VIVID(object):
                        'path': img_list[0],
                        'poses': compensated_poses
                        }
-
+    
     def __iter__(self):
         return self.generator()
 
@@ -39,22 +41,27 @@ class test_framework_VIVID(object):
         return sum(len(imgs) for imgs in self.img_files)
 
 
-def read_scene_data(data_root, sequence_set, seq_length=3, step=1, input_type='RGB'):
+def read_scene_data(data_root, sequence_set, seq_length=3, step=5, input_type='RGB'):
     data_root = Path(data_root)
     im_sequences = []
     poses_sequences = []
     indices_sequences = []
-    demi_length = (seq_length - 1) // 2
+    demi_length = (seq_length - 1) // 2 
+    # step = 5
     shift_range = np.array([step*i for i in range(-demi_length, demi_length + 1)]).reshape(1, -1)
 
-    sequences = []
+    print("\033[93m[IMP]\033[0m shift_range : ", shift_range)     
+    
+    sequences = [] 
     for seq in sequence_set:
-        sequences.append((data_root/seq))
+        sequences.append((data_root/seq)) 
 
-    print('getting test metadata for theses sequences : {}'.format(sequences))
+    # print('getting test metadata for theses sequences : {}'.format(sequences))
+    print("\033[92m[INFO]\033[0m getting test metadata for theses sequences : ", sequences)
+    
     for sequence in tqdm(sequences):
         if input_type == 'RGB':
-            imgs = sorted((sequence/'RGB').files('*.png'))
+            imgs = sorted((sequence/'RGB').files('*.png'))  
             poses = np.genfromtxt(sequence/'poses_RGB.txt').astype(np.float64).reshape(-1, 3, 4)
         else:
             imgs = sorted((sequence/'Thermal').files('*.png'))
@@ -65,5 +72,9 @@ def read_scene_data(data_root, sequence_set, seq_length=3, step=1, input_type='R
         snippet_indices = shift_range + tgt_indices
         im_sequences.append(imgs)
         poses_sequences.append(poses)
-        indices_sequences.append(snippet_indices)
+        indices_sequences.append(snippet_indices) 
+        
     return im_sequences, poses_sequences, indices_sequences
+
+
+

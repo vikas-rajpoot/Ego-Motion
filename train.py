@@ -540,5 +540,9 @@ def compute_pose_error(gt, pred):
 
     return [metric.item() for metric in [ATE/snippet_length, RE/snippet_length]]
 
+
 if __name__ == '__main__':
     main()
+
+
+

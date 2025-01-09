@@ -82,7 +82,8 @@ parser.add_argument('--with-auto-mask', type=int,  default=1, help='with the mas
 
 best_depth_error = -1
 best_pose_error = -1
-n_iter = 0
+n_iter = 0 
+
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 torch.autograd.set_detect_anomaly(True)
 
@@ -153,11 +154,13 @@ def main():
         sequence_length = args.sequence_length,
         interval     = args.interval,
         train        = True
-    )
+    ) 
+    
     new_sample = train_set[0] 
     print("pause ") 
-        
+
     # if no Groundtruth is avalaible, Validation set is the same type as training set to measure photometric loss from warping 
+
     val_pose_set = None 
     if args.with_gt:
         from dataloader.VIVID_validation_folders import ValidationSet, ValidationSetPose
@@ -244,7 +247,6 @@ def main():
         writer = csv.writer(csvfile, delimiter='\t')
         writer.writerow(['train_loss', 'photo_loss', 'smooth_loss', 'geometry_consistency_loss'])
         
-    
     
     print('\033[92m [INFO] \033[0m Training started at {}'.format(datetime.datetime.now().strftime("%m-%d-%H:%M")))  
     print('\033[92m [INFO] \033[0m Training for {} epochs'.format(args.epochs)) 
@@ -351,7 +353,7 @@ def train(args, train_loader, disp_net, pose_net, optimizer, epoch_size, logger,
         intrinsics_rgb = intrinsics_rgb.to(device)
         extrinsics_thr2rgb = extrinsics_thr2rgb.to(device)
 
-        # compute output
+        # compute output 
         tgt_depth, ref_depths = compute_depth(disp_net, tgt_thr_img, ref_thr_imgs)
         poses, poses_inv      = compute_pose_with_inv(pose_net, tgt_thr_img, ref_thr_imgs)
 
@@ -373,7 +375,7 @@ def train(args, train_loader, disp_net, pose_net, optimizer, epoch_size, logger,
                                                          poses_rgb, poses_rgb_inv, args.num_scales, args.rgb_ssim, args.with_ssim,
                                                          args.with_rgb_mask, args.with_auto_mask, args.padding_mode)
 
-        loss = w_thr*w1*loss_1 + w2*loss_2 + w_thr*w3*loss_3 + w_rgb*w1*loss_4 + w_rgb*w3*loss_5 
+        loss = w_thr*w1*loss_1 + w2*loss_2 + w_thr*w3*loss_3 + w_rgb*w1*loss_4 + w_rgb*w3*loss_5  
 
         if log_losses:
             train_writer.add_scalar('image_recon_loss_thermal'         , loss_1.item(), n_iter)
@@ -386,7 +388,7 @@ def train(args, train_loader, disp_net, pose_net, optimizer, epoch_size, logger,
         # record loss and EPE 
         losses.update(loss.item(), args.batch_size)
 
-        # compute gradient and do Adam step
+        # compute gradient and do Adam step 
         optimizer.zero_grad() 
         loss.backward() 
         optimizer.step() 
@@ -522,7 +524,7 @@ def compute_depth(disp_net, tgt_img, ref_imgs):
         ref_depth = [1/disp for disp in disp_net(ref_img)]
         ref_depths.append(ref_depth)
 
-    return tgt_depth, ref_depths
+    return tgt_depth, ref_depths 
 
 
 def compute_pose_with_inv(pose_net, tgt_img, ref_imgs):
@@ -554,5 +556,12 @@ def compute_pose_error(gt, pred):
 
 if __name__ == '__main__':
     main()
+
+
+
+
+
+
+
 
 

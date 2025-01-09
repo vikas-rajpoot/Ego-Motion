@@ -240,4 +240,22 @@ def inverse_warp2(img, depth, ref_depth, pose, intrinsics, padding_mode='zeros')
 
     projected_depth = F.grid_sample(ref_depth, src_pixel_coords, padding_mode=padding_mode, align_corners=False)
 
-    return projected_img, valid_mask, projected_depth, computed_depth
+    return projected_img, valid_mask, projected_depth, computed_depth 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

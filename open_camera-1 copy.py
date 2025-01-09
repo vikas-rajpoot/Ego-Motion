@@ -8,8 +8,8 @@ sock.connect((CAMERA_IP, CAMERA_PORT))
 print("Connected to the camera.")
 
 
-INIT_COMMAND = b'START_STREAM'
-sock.sendall(INIT_COMMAND)
+# INIT_COMMAND = b'START_STREAM'
+sock.sendall() 
 
 raw_data = b''
 while len(raw_data) < 5:  # Adjust expected_length for your resolution

@@ -32,12 +32,13 @@ parser.add_argument("--with-pose", action='store_true', default=True,
 parser.add_argument("--no-train-gt", action='store_true', default=False,
                     help="If selected, will delete ground truth depth to save space")
 parser.add_argument("--dump-root", type=str, default='/home/vk/03/ThermalSfMLearner/ProcessedData/', help="Where to dump the data")
-parser.add_argument("--height", type=int, default=256, help="image height")
+parser.add_argument("--height", type=int, default=256, help="image height") 
 parser.add_argument("--width", type=int, default=320, help="image width")
 parser.add_argument("--num-threads", type=int, default=4, help="number of threads to use")
 
 
 args = parser.parse_args() 
+
 
 def dump_example(args, scene):
     scene_name = scene.split('/')[-1]
@@ -108,7 +109,7 @@ def extract_well_lit_images(args):
     dump_dir_depth_RGB.makedirs_p()
 
     # read well-lit image list
-    img_list = np.genfromtxt('./common/data_prepare/well_lit_from_varying.txt').astype(int) # 
+    img_list = np.genfromtxt('./common/data_prepare/well_lit_from_varying.txt').astype(int) #  
 
     for frame_nb in img_list :
         dump_img_T_file     = dump_dir_rgb/'{:06d}.png'.format(frame_nb)
@@ -150,30 +151,35 @@ def main():
                 tasks.cancel()
                 raise e
 
-    print('Extracting well-lit image from varying illumination set')
+    print('Extracting well-lit image from varying illumination set') 
     extract_well_lit_images(args)
 
-    print('Generating train val lists')
+    print('Generating train val lists') 
     with open(args.dump_root / 'train_indoor.txt', 'w') as tf:
-        for seq in data_loader.indoor_train_list :
+        for seq in data_loader.indoor_train_list:
             tf.write('{}\n'.format(seq))
     with open(args.dump_root / 'val_indoor.txt', 'w') as tf:
-        for seq in data_loader.indoor_val_list :
+        for seq in data_loader.indoor_val_list:
             tf.write('{}\n'.format(seq))
     with open(args.dump_root / 'test_indoor.txt', 'w') as tf:
-        for seq in data_loader.indoor_test_list :
+        for seq in data_loader.indoor_test_list:
             tf.write('{}\n'.format(seq))
     with open(args.dump_root / 'train_outdoor.txt', 'w') as tf:
-        for seq in data_loader.outdoor_train_list :
+        for seq in data_loader.outdoor_train_list:
             tf.write('{}\n'.format(seq))
     with open(args.dump_root / 'val_outdoor.txt', 'w') as tf:
-        for seq in data_loader.outdoor_val_list :
+        for seq in data_loader.outdoor_val_list:
             tf.write('{}\n'.format(seq))
     with open(args.dump_root / 'test_outdoor.txt', 'w') as tf:
-        for seq in data_loader.outdoor_test_list :
+        for seq in data_loader.outdoor_test_list:
             tf.write('{}\n'.format(seq))
 
     print('Done!')
 
 if __name__ == '__main__':
     main()
+
+
+
+
+

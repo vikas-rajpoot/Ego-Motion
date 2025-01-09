@@ -54,6 +54,7 @@ def visualize_images_and_matrices(tgt_thr_img, ref_thr_imgs, tgt_thr_img_clr, re
 # Example usage with dummy data
 # visualize_images_and_matrices(tgt_thr_img, ref_thr_imgs, tgt_thr_img_clr, ref_thr_img_clr, tgt_rgb_img, ref_rgb_imgs, intrinsics_thr, intrinsics_rgb, extrinsics_thr2rgb)
 # Custom dataset Loader for the windows :) 
+
 class SequenceFolder(data.Dataset):
     """
     A sequence data loader where the files are arranged in this way:
@@ -147,9 +148,13 @@ class SequenceFolder(data.Dataset):
         self.samples = sequence_set
 
     def __getitem__(self, index):
-        sample = self.samples[index]
-        tgt_thr_img = np.expand_dims(load_as_float(sample["tgt_thr"]), axis=2)
-        tgt_rgb_img = load_as_float(sample["tgt_rgb"])
+        sample = self.samples[index] 
+        
+        tgt_thr_img = np.expand_dims(load_as_float(sample["tgt_thr"]), axis=2) 
+        print("\033[92m[INFO]\033[00m tgt_thr", sample["tgt_thr"]) 
+        
+        tgt_rgb_img = load_as_float(sample["tgt_rgb"]) 
+        print("\033[92m[INFO]\033[00m tgt_rgb", sample["tgt_rgb"]) 
 
         tgt_trgb_img = np.concatenate((tgt_thr_img, tgt_rgb_img), axis=2)
         ref_trgb_imgs = [
@@ -162,9 +167,14 @@ class SequenceFolder(data.Dataset):
             )
             for ref_thr_img, ref_rgb_img in zip(
                 sample["ref_thr_imgs"], sample["ref_rgb_imgs"]
-            )
-        ]
-
+            ) 
+        ] 
+        
+        for ref_thr_img, ref_rgb_img in zip(sample["ref_thr_imgs"], sample["ref_rgb_imgs"]):
+            print("\033[92m[INFO]\033[00m ref_thr_img ", ref_thr_img) 
+            print("\033[92m[INFO]\033[00m ref_rgb_img ", ref_rgb_img) 
+            
+        
         imgs_trgb, intrinsics_trgb = self.tf_share(
             [tgt_trgb_img] + ref_trgb_imgs,
             np.stack(
@@ -172,12 +182,12 @@ class SequenceFolder(data.Dataset):
                 axis=0,
             ),
         )
-
+        
         imgs_thr_ = [im[:, :, [0]] for im in imgs_trgb]
         imgs_rgb = [im[:, :, 1:] for im in imgs_trgb]
 
-        intrinsics_thr = intrinsics_trgb[0, :, :]
-        intrinsics_rgb = intrinsics_trgb[1, :, :]
+        intrinsics_thr     = intrinsics_trgb[0, :, :]
+        intrinsics_rgb     = intrinsics_trgb[1, :, :]
         extrinsics_thr2rgb = sample["extrinsics_thr2rgb"]
 
         imgs_rgb, _ = self.tf_rgb(imgs_rgb, None)
@@ -193,7 +203,7 @@ class SequenceFolder(data.Dataset):
         tgt_thr_img_clr = imgs_thr_clr[0]
         ref_thr_img_clr = imgs_thr_clr[1:]
 
-        visualize_images_and_matrices(tgt_thr_img, ref_thr_imgs, tgt_thr_img_clr, ref_thr_img_clr, tgt_rgb_img, ref_rgb_imgs, intrinsics_thr, intrinsics_rgb, extrinsics_thr2rgb)
+        # visualize_images_and_matrices(tgt_thr_img, ref_thr_imgs, tgt_thr_img_clr, ref_thr_img_clr, tgt_rgb_img, ref_rgb_imgs, intrinsics_thr, intrinsics_rgb, extrinsics_thr2rgb)
         
         return (
             tgt_thr_img,

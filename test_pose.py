@@ -21,7 +21,7 @@ parser.add_argument("--img-width", default=320, type=int, help="Image width")
 parser.add_argument("--no-resize", action='store_true', help="no resizing is done") 
 parser.add_argument("--dataset-dir", default="/home/vk/03/ThermalSfMLearner/ProcessedData", type=str, help="Dataset directory") 
 parser.add_argument('--sequence-length', type=int, metavar='N', help='sequence length for testing', default=5) 
-parser.add_argument("--sequences", default=['indoor_aggresive_dark'], type=str, nargs='*', help="sequences to test") 
+parser.add_argument("--sequences", default=['indoor_aggresive_global'], type=str, nargs='*', help="sequences to test") 
 parser.add_argument("--output-dir", default=None, type=str, help="Output directory for saving predictions in a big 3D numpy file")
 parser.add_argument('--resnet-layers', required=False, type=int, default=18, choices=[18, 50], help='depth network architecture.')
 parser.add_argument('--input', type=str, choices=['RGB', 'T'], default='T', help='input data type') 
@@ -29,6 +29,7 @@ parser.add_argument('--scene_type', type=str, choices=['indoor', 'outdoor'], def
 
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
 
 def load_tensor_image(img, args):
     h,w,_ = img.shape
@@ -91,7 +92,7 @@ def main():
             load_tensor_img = load_tensor_Timage_outdoor
 
     # load data loader 
-    from eval_vivid.pose_evaluation_utils import test_framework_VIVID as test_framework
+    from eval_vivid.pose_evaluation_utils import test_framework_VIVID as test_framework 
     dataset_dir = Path(args.dataset_dir) 
     framework = test_framework(dataset_dir, args.sequences, seq_length=seq_length, step=1, input_type=args.input)
 
@@ -122,8 +123,12 @@ def main():
             pose_mat = np.vstack([pose_mat, np.array([0, 0, 0, 1])]) 
             global_pose = global_pose @  np.linalg.inv(pose_mat) 
             poses.append(global_pose[0:3, :]) 
-
-        final_poses = np.stack(poses, axis=0) 
+            
+        final_poses = np.stack(poses, axis=0)  
+        
+        # print("\033[92m final_poses : ", final_poses, "\033[0m")  
+        
+        print("\033[92m[INFO]\033[0m final_poses.shape : ", final_poses.shape)  
         
         if args.output_dir is not None:
             predictions_array[j] = final_poses
@@ -134,7 +139,7 @@ def main():
     mean_errors = errors.mean(0)
     std_errors = errors.std(0)
     error_names = ['ATE', 'RE']
-    print('')
+    print('') 
     print("Results")
     print("\t {:>10}, {:>10}".format(*error_names))
     print("mean \t {:10.4f}, {:10.4f}".format(*mean_errors))
@@ -172,7 +177,7 @@ def compute_pose(pose_net, tgt_img, ref_imgs):
 
 
 if __name__ == '__main__':
-    main()
+    main() 
 
 
 
