@@ -15,9 +15,17 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    path = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_dark/Thermal/000004.png" 
-    thermal_image = np.expand_dims(imread(path).astype(np.float32),  axis=2)  
-    print("\033[92m[INFO]\033[00m Thermal Image Shape: ", thermal_image.shape) 
+    path = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_dark/Thermal/000004.png"
+    # path = "/home/vk/03/ThermalSfMLearner/ProcessedData/our_data/frame_0441.jpg" 
+    thermal_image = np.expand_dims(imread(path).astype(np.float32),  axis=2)    
+    
+    
+    array_squeezed = np.squeeze(thermal_image, axis=2)
+    np.savetxt("thermal_image.csv", array_squeezed, delimiter=",") 
+    
+    print("\033[92m[INFO]\033[00m Thermal Image Shape: ", thermal_image.shape)  
+    # print("\033[92m[INFO]\033[00m Thermal Image Values: \n", thermal_image) 
+    print("\033[92m[INFO]\033[00m Thermal Image Type : ", type(thermal_image))  
     
     path_d = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_dark/Depth_T/000004.npy" 
     depth_image = np.load(path_d).astype(np.float32) 
@@ -41,8 +49,12 @@ def main():
     thermal_image_1, _ = valid_tf_thr([thermal_image], None) 
     thermal_image_2 = thermal_image_1[0]  
     
-    thermal_image_2 = torch.nn.functional.interpolate(thermal_image_2.unsqueeze(0), size=(256, 320), mode='bilinear', align_corners=False)
-    print("\033[92m[INFO]\033[00m Thermal Image Shape: ", thermal_image_2.shape) 
+    print("\033[92m[INFO]\033[00m Thermal Image 2 Shape: ", thermal_image_2.shape) 
+    print("\033[92m[INFO]\033[00m Thermal Image 2 Type: ", type(thermal_image_2))  
+    print("\033[92m[INFO]\033[00m Thermal Image 2 Values: \n", thermal_image_2) 
+    
+    thermal_image_2 = torch.nn.functional.interpolate(thermal_image_2.unsqueeze(0), size=(256, 320), mode='bilinear', align_corners=False) 
+
 
     print("=> creating model")  
     disp_net = models.DispResNet(resnet_layers, False, num_channel=1).to(device)
@@ -69,10 +81,12 @@ def main():
     np.savetxt("vikas_data/output_depth.csv", output_depth, delimiter=",")
     
     # Evaluate the predicted depth with the original depth
-    mae, rmse = evaluate_depth(output_depth, depth_image)
-    print(f"\033[92mMean Absolute Error (MAE): {mae}\033[00m")
-    print(f"\033[93mRoot Mean Squared Error (RMSE): {rmse}\033[00m")
-    # visualize images
+    # mae = evaluate_depth(output_depth, depth_image)
+    # print(f"\033[92mMean Absolute Error (MAE): {mae}\033[00m")
+    # print(f"\033[93mRoot Mean Squared Error (RMSE): {rmse}\033[00m")
+    # visualize images 
+    
+    
     plt.figure(figsize=(15, 5))
 
     plt.subplot(1, 3, 1)
@@ -95,6 +109,11 @@ def main():
 
 if __name__ == '__main__': 
     main()
+
+
+
+
+
 
 
 

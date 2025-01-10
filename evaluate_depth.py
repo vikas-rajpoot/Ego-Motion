@@ -28,7 +28,8 @@ def evaluate_depth(predicted_depth, original_depth):
     log_rmse = np.sqrt(np.mean((np.log(predicted_depth) - np.log(original_depth)) ** 2))
 
     # Calculate the structural similarity index measure
-    ssim_index = ssim(predicted_depth, original_depth)
+    data_range = 1.0 
+    ssim_index = ssim(predicted_depth, original_depth, data_range=data_range)
 
     # Placeholder for scale-invariant logarithmic error
     scale_invariant_log_error = np.nan  # Implement as needed

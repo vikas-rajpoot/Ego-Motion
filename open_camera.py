@@ -4,7 +4,7 @@ import os
 def open_camera():
     # Open the default camera (index 0) 
     rtsp = "rtsp://192.168.144.25:8554/video2"
-    cap = cv2.VideoCapture(rtsp) 
+    cap = cv2.VideoCapture(0)  
 
     if not cap.isOpened():
         print("Error: Could not open the camera.") 
