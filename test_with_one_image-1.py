@@ -15,9 +15,13 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    path = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_dark/Thermal/000004.png"
+    # path = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_dark/Thermal/000004.png" 
+    # path = "/home/vk/03/ThermalSfMLearner/images/02.png" 
+    path = "images/frame_247.png" 
     # path = "/home/vk/03/ThermalSfMLearner/ProcessedData/our_data/frame_0441.jpg" 
-    thermal_image = np.expand_dims(imread(path).astype(np.float32),  axis=2)    
+    thermal_image = np.expand_dims(imread(path).astype(np.float32),  axis=2)     
+    
+    print(thermal_image.shape) 
     
     
     array_squeezed = np.squeeze(thermal_image, axis=2)
@@ -109,14 +113,4 @@ def main():
 
 if __name__ == '__main__': 
     main()
-
-
-
-
-
-
-
-
-
-
 
