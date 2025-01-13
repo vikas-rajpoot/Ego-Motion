@@ -11,7 +11,7 @@ class ThermalCamera:
         self.max_temperature = None
         self.fire_status = None
 
-        self.camera = Lepton()
+        self.camera = Lepton() 
 
     def raw_to_celsius(self, raw_data):
         SCALE_FACTOR = 0.01
@@ -41,9 +41,9 @@ class ThermalCamera:
     def display_live_feed(self):
         print("Thermal camera live feed started")
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter('thermal_camera_output.avi', fourcc, 20.0, (1080, 720))   
+        out = cv2.VideoWriter('images/thermal_camera_output.avi', fourcc, 20.0, (1080, 720))   
         while True:
-            thermal_image = self.capture_thermal_image()
+            thermal_image = self.capture_thermal_image() 
             color_mapped_img, self.hottest_point, self.max_temperature = self.find_hottest_region_center(thermal_image)
 
             if self.max_temperature > 140:
@@ -67,6 +67,9 @@ class ThermalCamera:
                 break
         self.camera.close()
 
-
 th = ThermalCamera()
-th.display_live_feed()
+th.display_live_feed() 
+
+
+
+
