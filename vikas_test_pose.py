@@ -4,7 +4,7 @@ import numpy as np
 from path import Path
 import argparse
 from tqdm import tqdm
-
+import pandas as pd 
 import sys
 sys.path.append('./common/')
 import models
@@ -17,8 +17,9 @@ img_height = 256
 img_width = 320 
 no_resize = False 
 dataset_dir = "/home/vk/03/ThermalSfMLearner/ProcessedData"
-sequence_length = 5 
-sequences = ['indoor_aggresive_dark'] 
+sequence_length = 5  
+
+sequences = ['indoor_robust_global']  
 output_dir = None 
 resnet_layers = 18 
 input = "T" 
@@ -99,10 +100,20 @@ def main():
         global_pose = np.eye(4)
         poses = []
         poses.append(global_pose[0:3, :])
+        
 
-        for iter in range(seq_length - 1):
-            pose = pose_net(squence_imgs[iter], squence_imgs[iter + 1]) 
-            # print("\033[92mpose : ", pose, "\033[0m")  
+        df_pose = pd.DataFrame(columns=['tx', 'ty', 'tz', 'rx', 'ry', 'rz'])
+ 
+        for iter in range(seq_length - 1): 
+            pose = pose_net(squence_imgs[iter], squence_imgs[iter + 1])  
+            # pose return by this is in format to tx, ty, tz, rx, ry, rz. 
+            pose_1 = pose.unsqueeze(1).tolist()[0][0] 
+
+            df_pose.loc[len(df_pose)] = pose_1             
+            
+            print("\033[92m pose_1 shape : \33[0m", pose_1) 
+            print("\033[92m pose_1 shape : \33[0m", len(pose_1))  
+            
             pose_mat = pose_vec2mat(pose).squeeze(0).cpu().numpy() 
             # print("\033[92m pose_mat : ", pose_mat, "\033[0m")   
             
@@ -119,6 +130,10 @@ def main():
         ATE, RE = compute_pose_error(sample['poses'], final_poses)
         errors[j] = ATE, RE
 
+    df_pose.to_csv("./vikas_data/pose.csv", index=False)  
+    
+    
+    
     mean_errors = errors.mean(0)
     std_errors = errors.std(0)
     error_names = ['ATE', 'RE']

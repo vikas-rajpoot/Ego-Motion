@@ -144,11 +144,11 @@ def quat2mat(quat):
 def pose_vec2mat(vec, rotation_mode='euler'):
     """
     Convert 6DoF parameters to transformation matrix.
-    Args:s
+    Args:s 
         vec: 6DoF parameters in the order of tx, ty, tz, rx, ry, rz -- [B, 6]
     Returns:
         A transformation matrix -- [B, 3, 4]
-    """
+    """ 
     translation = vec[:, :3].unsqueeze(-1)  # [B, 3, 1]
     rot = vec[:, 3:]
     if rotation_mode == 'euler':
@@ -157,7 +157,7 @@ def pose_vec2mat(vec, rotation_mode='euler'):
         rot_mat = quat2mat(rot)  # [B, 3, 3]
 
     transform_mat = torch.cat([rot_mat, translation], dim=2)  # [B, 3, 4]
-    return transform_mat
+    return transform_mat 
 
 
 # inverse_warp from sfm-learner paper
