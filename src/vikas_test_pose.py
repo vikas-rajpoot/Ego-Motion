@@ -90,6 +90,11 @@ def main():
         output_dir.makedirs_p()
         predictions_array = np.zeros((len(framework), seq_length, 3, 4))
 
+    df_pose = pd.DataFrame(columns=['tx', 'ty', 'tz', 'rx', 'ry', 'rz']) 
+
+    df_global_pose = pd.DataFrame(columns=['frame', 'tx', 'ty', 'tz', 'r11', 'r12', 'r13', 
+                                        'r21', 'r22', 'r23', 'r31', 'r32', 'r33'])
+
     for j, sample in enumerate(tqdm(framework)):
         imgs = sample['imgs']
         squence_imgs = []
@@ -102,8 +107,10 @@ def main():
         poses.append(global_pose[0:3, :])
         
 
-        df_pose = pd.DataFrame(columns=['tx', 'ty', 'tz', 'rx', 'ry', 'rz'])
- 
+        # Initialize a DataFrame to save poses
+
+
+
         for iter in range(seq_length - 1): 
             pose = pose_net(squence_imgs[iter], squence_imgs[iter + 1])  
             # pose return by this is in format to tx, ty, tz, rx, ry, rz. 
@@ -111,8 +118,8 @@ def main():
 
             df_pose.loc[len(df_pose)] = pose_1             
             
-            print("\033[92m pose_1 shape : \33[0m", pose_1) 
-            print("\033[92m pose_1 shape : \33[0m", len(pose_1))  
+            # print("\033[92m pose_1 shape : \33[0m", pose_1) 
+            # print("\033[92m pose_1 shape : \33[0m", len(pose_1))  
             
             pose_mat = pose_vec2mat(pose).squeeze(0).cpu().numpy() 
             # print("\033[92m pose_mat : ", pose_mat, "\033[0m")   
@@ -120,15 +127,24 @@ def main():
             pose_mat = np.vstack([pose_mat, np.array([0, 0, 0, 1])]) 
             global_pose = global_pose @  np.linalg.inv(pose_mat) 
             poses.append(global_pose[0:3, :])  
+            
+            # Save the global_pose matrix
+            translation = global_pose[:3, 3]
+            rotation = global_pose[:3, :3].flatten()
+            df_global_pose.loc[len(df_global_pose)] = [iter] + translation.tolist() + rotation.tolist()
+
 
         final_poses = np.stack(poses, axis=0) 
-        print("\033[92m [INFO] \033[0m final_poses : ", final_poses.shape)  
+        # print("\033[92m [INFO] \033[0m final_poses : ", final_poses.shape)  
         
         if output_dir is not None:
             predictions_array[j] = final_poses
 
         ATE, RE = compute_pose_error(sample['poses'], final_poses)
         errors[j] = ATE, RE
+
+    # Save the global poses to a CSV file
+    df_global_pose.to_csv("./vikas_data/global_pose.csv", index=False)
 
     df_pose.to_csv("./vikas_data/pose.csv", index=False)  
     
@@ -143,6 +159,8 @@ def main():
     print("mean \t {:10.4f}, {:10.4f}".format(*mean_errors))
     print("std \t {:10.4f}, {:10.4f}".format(*std_errors))
 
+    print("\033[92m [INFO] \033[0m COMPLETED") 
+    
     if output_dir is not None:
         np.save(output_dir/'predictions.npy', predictions_array)
 
