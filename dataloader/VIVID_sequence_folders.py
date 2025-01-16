@@ -151,10 +151,10 @@ class SequenceFolder(data.Dataset):
         sample = self.samples[index] 
         
         tgt_thr_img = np.expand_dims(load_as_float(sample["tgt_thr"]), axis=2) 
-        print("\033[92m[INFO]\033[00m tgt_thr", sample["tgt_thr"]) 
+        # print("\033[92m[INFO]\033[00m tgt_thr", sample["tgt_thr"]) 
         
         tgt_rgb_img = load_as_float(sample["tgt_rgb"]) 
-        print("\033[92m[INFO]\033[00m tgt_rgb", sample["tgt_rgb"]) 
+        # print("\033[92m[INFO]\033[00m tgt_rgb", sample["tgt_rgb"]) 
 
         tgt_trgb_img = np.concatenate((tgt_thr_img, tgt_rgb_img), axis=2)
         ref_trgb_imgs = [
@@ -170,9 +170,9 @@ class SequenceFolder(data.Dataset):
             ) 
         ] 
         
-        for ref_thr_img, ref_rgb_img in zip(sample["ref_thr_imgs"], sample["ref_rgb_imgs"]):
-            print("\033[92m[INFO]\033[00m ref_thr_img ", ref_thr_img) 
-            print("\033[92m[INFO]\033[00m ref_rgb_img ", ref_rgb_img) 
+        # for ref_thr_img, ref_rgb_img in zip(sample["ref_thr_imgs"], sample["ref_rgb_imgs"]):
+            # print("\033[92m[INFO]\033[00m ref_thr_img ", ref_thr_img) 
+            # print("\033[92m[INFO]\033[00m ref_rgb_img ", ref_rgb_img)  
             
         
         imgs_trgb, intrinsics_trgb = self.tf_share(
