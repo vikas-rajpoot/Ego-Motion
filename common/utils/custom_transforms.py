@@ -84,7 +84,7 @@ class TensorColorize(object):
     def __init__(self):
         import matplotlib.pyplot as plt
         self.cmap = plt.get_cmap('jet')
-
+    
     def __call__(self, images, intrinsics):
         imgs_clr = []
         for im in images:

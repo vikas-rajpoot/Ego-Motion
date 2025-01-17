@@ -197,4 +197,20 @@ def compute_errors(gt, pred, scene):
 
         sq_rel += torch.mean(((valid_gt - valid_pred)**2) / valid_gt)
 
-    return [metric.item() / batch_size for metric in [abs_diff, abs_rel, sq_rel, a1, a2, a3]]
+    return [metric.item() / batch_size for metric in [abs_diff, abs_rel, sq_rel, a1, a2, a3]] 
+
+
+
+# def compute_errors(gt, pred): 
+#     """Computation of error metrics between predicted and ground truth depths
+#     """
+#     thresh = torch.max((gt / pred), (pred / gt))
+#     a1 = (thresh < 1.25     ).float().mean()
+#     a2 = (thresh < 1.25 ** 2).float().mean()
+#     a3 = (thresh < 1.25 ** 3).float().mean()
+
+#     rmse = (gt - pred) ** 2
+#     rmse = torch.sqrt(rmse.mean())
+
+
+
