@@ -53,6 +53,8 @@ def visualize_images_and_matrices(tgt_thr_img, ref_thr_imgs, tgt_thr_img_clr, re
 # visualize_images_and_matrices(tgt_thr_img, ref_thr_imgs, tgt_thr_img_clr, ref_thr_img_clr, tgt_rgb_img, ref_rgb_imgs, intrinsics_thr, intrinsics_rgb, extrinsics_thr2rgb)
 # Custom dataset Loader for the windows :) 
 
+
+
 class SequenceFolder(data.Dataset):
     """
     A sequence data loader where the files are arranged in this way:
@@ -93,7 +95,7 @@ class SequenceFolder(data.Dataset):
                 self.root / "train_outdoor.txt"
                 if train
                 else self.root / "val_outdoor.txt"
-            )
+            ) 
 
         self.folders = [self.root / folder[:-1] for folder in open(folder_list_path)]
         self.tf_share = tf_share
@@ -101,7 +103,7 @@ class SequenceFolder(data.Dataset):
         self.tf_thr = tf_thr
         self.tf_rgb = tf_rgb
         self.crawl_folders(sequence_length, interval)
-
+        
     def crawl_folders(self, sequence_length, interval):
         sequence_set = []
         demi_length = (sequence_length - 1) // 2 + interval - 1
@@ -120,7 +122,7 @@ class SequenceFolder(data.Dataset):
             ) 
             intrinsics_rgb = (
                 np.genfromtxt(folder / "cam_RGB.txt").astype(np.float32).reshape((3, 3))
-            )
+            ) 
             extrinsics_thr2rgb = (
                 np.genfromtxt(folder / "Tr_T2RGB.txt")
                 .astype(np.float32)
