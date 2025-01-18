@@ -210,16 +210,16 @@ def main():
     if args.epoch_size == 0:
         args.epoch_size = len(train_loader)
 
-    # create model
-    print("=> creating model")
-    disp_net = models.DispResNet(args.resnet_layers, args.with_pretrain, num_channel=1).to(device)
-    pose_net = models.PoseResNet(18, args.with_pretrain, num_channel=1).to(device)
+    # create model 
+    print("=> creating model") 
+    disp_net = models.DispResNet(args.resnet_layers, args.with_pretrain, num_channel=1).to(device) 
+    pose_net = models.PoseResNet(18, args.with_pretrain, num_channel=1).to(device) 
     
-    # load parameters
-    if args.pretrained_disp:
-        print("=> using pre-trained weights for DispResNet")
-        weights = torch.load(args.pretrained_disp)
-        disp_net.load_state_dict(weights['state_dict'], strict=False)
+    # load parameters 
+    if args.pretrained_disp: 
+        print("=> using pre-trained weights for DispResNet") 
+        weights = torch.load(args.pretrained_disp) 
+        disp_net.load_state_dict(weights['state_dict'], strict=False) 
 
     if args.pretrained_pose:
         print("=> using pre-trained weights for PoseResNet")
@@ -234,7 +234,8 @@ def main():
     optim_params = [
         {'params': disp_net.parameters(), 'lr': args.lr},
         {'params': pose_net.parameters(), 'lr': args.lr}
-    ]
+    ] 
+    
     optimizer = torch.optim.Adam(optim_params,
                                  betas=(args.momentum, args.beta),
                                  weight_decay=args.weight_decay)
@@ -335,6 +336,48 @@ def train(args, train_loader, disp_net, pose_net, optimizer, epoch_size, logger,
 
     for i, (tgt_thr_img, ref_thr_imgs, tgt_thr_img_clr, ref_thr_img_clr, tgt_rgb_img, ref_rgb_imgs, \
             intrinsics_thr, intrinsics_rgb, extrinsics_thr2rgb) in enumerate(train_loader):
+        
+        
+        
+        print("\033[92m[INFO]\033[00m tgt_thr_img ", type(tgt_thr_img)) 
+        print("\033[92m[INFO]\033[00m ref_thr_imgs ", type(ref_thr_imgs))
+        print("\033[92m[INFO]\033[00m tgt_thr_img_clr ", type(tgt_thr_img_clr)) 
+        print("\033[92m[INFO]\033[00m ref_thr_img_clr ", type(ref_thr_img_clr))
+        print("\033[92m[INFO]\033[00m tgt_rgb_img ", type(tgt_rgb_img))
+        print("\033[92m[INFO]\033[00m ref_rgb_imgs ", type(ref_rgb_imgs))
+        print("\033[92m[INFO]\033[00m intrinsics_thr ", type(intrinsics_thr))
+        print("\033[92m[INFO]\033[00m intrinsics_rgb ", type(intrinsics_rgb))
+        print("\033[92m[INFO]\033[00m extrinsics_thr2rgb ", type(extrinsics_thr2rgb)) 
+        
+        
+        import matplotlib.pyplot as plt
+
+        def visualize_image(img, title):
+            img = img.cpu().numpy().transpose(1, 2, 0)
+            plt.imshow(img)
+            plt.title(title)
+            plt.show()
+
+        visualize_image(tgt_thr_img[0], 'Target Thermal Image')
+        visualize_image(ref_thr_imgs[0][0], 'Reference Thermal Image 0')
+        visualize_image(tgt_thr_img_clr[0], 'Target Thermal Image Colorized')
+        visualize_image(ref_thr_img_clr[0][0], 'Reference Thermal Image Colorized 0')
+        visualize_image(tgt_rgb_img[0], 'Target RGB Image')
+        visualize_image(ref_rgb_imgs[0][0], 'Reference RGB Image 0')
+        
+        print("\033[92m[INFO]\033[00m tgt_thr_img ", tgt_thr_img.shape) 
+        print("\033[92m[INFO]\033[00m ref_thr_imgs ", ref_thr_imgs[0].shape) 
+        print("\033[92m[INFO]\033[00m tgt_thr_img_clr ", tgt_thr_img_clr.shape) 
+        print("\033[92m[INFO]\033[00m ref_thr_img_clr ", ref_thr_img_clr[0].shape) 
+        print("\033[92m[INFO]\033[00m tgt_rgb_img ", tgt_rgb_img.shape) 
+        print("\033[92m[INFO]\033[00m ref_rgb_imgs ", ref_rgb_imgs[0].shape) 
+        print("\033[92m[INFO]\033[00m intrinsics_thr ", intrinsics_thr.shape)
+        print("\033[92m[INFO]\033[00m intrinsics_rgb ", intrinsics_rgb.shape) 
+        print("\033[92m[INFO]\033[00m extrinsics_thr2rgb ", extrinsics_thr2rgb.shape) 
+        
+        
+        
+        print("pause---") 
         log_losses = i > 0 and n_iter % args.print_freq == 0
 
         # measure data loading time
@@ -370,7 +413,7 @@ def train(args, train_loader, disp_net, pose_net, optimizer, epoch_size, logger,
         ref_depths_rgb = [compute_forward_warp(ref_depth, ref_depth, extrinsics_thr2rgb[:,0:3,:], intrinsics_rgb, intrinsics_thr, args.num_scales, args.padding_mode) for ref_depth in ref_depths]
         poses_rgb, poses_rgb_inv = compute_warp_pose(poses, poses_inv, extrinsics_thr2rgb)
 
-        # photometric consistency loss
+        # photometric consistency loss 
         loss_4, loss_5 = compute_photo_and_geometry_loss(tgt_rgb_img, ref_rgb_imgs, intrinsics_rgb, tgt_depth_rgb, ref_depths_rgb,
                                                          poses_rgb, poses_rgb_inv, args.num_scales, args.rgb_ssim, args.with_ssim,
                                                          args.with_rgb_mask, args.with_auto_mask, args.padding_mode)

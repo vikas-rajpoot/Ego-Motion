@@ -127,9 +127,10 @@ class RandomScaleCrop(object):
         output_intrinsics[:,1] *= y_scaling
 
         scaled_images = [cv2.resize(im, (scaled_w, scaled_h)) for im in images]
-
+        
         offset_y = np.random.randint(scaled_h - in_h + 1)
-        offset_x = np.random.randint(scaled_w - in_w + 1)
+        offset_x = np.random.randint(scaled_w - in_w + 1) 
+        
         cropped_images = [im[offset_y:offset_y + in_h, offset_x:offset_x + in_w] for im in scaled_images]
 
         output_intrinsics[:, 0, 2] -= offset_x

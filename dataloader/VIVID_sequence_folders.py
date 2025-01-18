@@ -127,7 +127,7 @@ class SequenceFolder(data.Dataset):
                 np.genfromtxt(folder / "Tr_T2RGB.txt")
                 .astype(np.float32)
                 .reshape((4, 4))
-            )
+            ) 
 
             for i in range(demi_length, len(imgs_thr) - demi_length):
                 sample = {
@@ -157,6 +157,7 @@ class SequenceFolder(data.Dataset):
         # print("\033[92m[INFO]\033[00m tgt_rgb", sample["tgt_rgb"]) 
 
         tgt_trgb_img = np.concatenate((tgt_thr_img, tgt_rgb_img), axis=2)
+        
         ref_trgb_imgs = [
             np.concatenate(
                 (
@@ -170,6 +171,10 @@ class SequenceFolder(data.Dataset):
             ) 
         ] 
         
+        print("\033[92m[INFO]\033[00m ref_trgb_imgs ", tgt_trgb_img.shape) 
+        print("\033[92m[INFO]\033[00m ref_trgb_imgs ", ref_trgb_imgs[0].shape) 
+        
+        print("end")  
         # for ref_thr_img, ref_rgb_img in zip(sample["ref_thr_imgs"], sample["ref_rgb_imgs"]):
             # print("\033[92m[INFO]\033[00m ref_thr_img ", ref_thr_img) 
             # print("\033[92m[INFO]\033[00m ref_rgb_img ", ref_rgb_img)  
@@ -177,11 +182,11 @@ class SequenceFolder(data.Dataset):
         
         imgs_trgb, intrinsics_trgb = self.tf_share(
             [tgt_trgb_img] + ref_trgb_imgs,
-            np.stack(
+            np.stack( 
                 (np.copy(sample["intrinsics_thr"]), np.copy(sample["intrinsics_rgb"])),
                 axis=0,
             ),
-        )
+        ) 
         
         imgs_thr_ = [im[:, :, [0]] for im in imgs_trgb]
         imgs_rgb = [im[:, :, 1:] for im in imgs_trgb]
@@ -189,7 +194,7 @@ class SequenceFolder(data.Dataset):
         intrinsics_thr     = intrinsics_trgb[0, :, :]
         intrinsics_rgb     = intrinsics_trgb[1, :, :]
         extrinsics_thr2rgb = sample["extrinsics_thr2rgb"]
-
+        
         imgs_rgb, _ = self.tf_rgb(imgs_rgb, None)
         imgs_thr, _ = self.tf_thr(imgs_thr_, None)
         imgs_thr_clr, _ = self.tf_thr_color(imgs_thr_, None)

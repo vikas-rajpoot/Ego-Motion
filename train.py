@@ -125,7 +125,7 @@ def main():
         args.temp_min = 0
         args.temp_max = 30
         args.vis_depth_max = 10
-
+    
     # set data loader 
     ArrToTen_rgb = custom_transforms.ArrayToTensor()
     ArrToTen_thr = custom_transforms.ArrayToTensor_Thermal(args.temp_min, args.temp_max) 
