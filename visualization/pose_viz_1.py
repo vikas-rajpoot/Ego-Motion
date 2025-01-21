@@ -9,7 +9,7 @@ def moving_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
 # Load the pose data
-df_global_pose = pd.read_csv("./vikas_data/global_pose.csv")
+df_global_pose = pd.read_csv("./data/global_pose.csv")
 
 # Extract translation (position) and rotation (orientation) data
 x = df_global_pose['tx']

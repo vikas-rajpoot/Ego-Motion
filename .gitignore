@@ -8,7 +8,7 @@ __pycache__
 .cache
 # docs
 mkdocs.yml 
-captured_frames 
+# captured_frames 
 collect some datasets 
 images
 # backup
