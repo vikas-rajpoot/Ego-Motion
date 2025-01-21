@@ -6,10 +6,10 @@ vikas_data
 __pycache__
 .vscode 
 .cache
-docs
+# docs
 mkdocs.yml 
 captured_frames 
 collect some datasets 
 images
-
+# backup
 
