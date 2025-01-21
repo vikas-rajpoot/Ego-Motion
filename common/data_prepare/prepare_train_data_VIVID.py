@@ -23,8 +23,8 @@ parser = argparse.ArgumentParser()
 # parser.add_argument("--num-threads", type=int, default=4, help="number of threads to use")
 
 
-parser.add_argument("--dataset_dir", default="/home/vk/02/ThermalDepth/data", metavar='DIR',
-                    help='path to original dataset')
+parser.add_argument("--dataset_dir", default="/home/vk/dataset/VIVID", metavar='DIR',
+                    help='path to original dataset') 
 parser.add_argument("--with-depth", action='store_true', default=True,
                     help="If available, will store depth ground truth along with images, for validation")
 parser.add_argument("--with-pose", action='store_true', default=True,

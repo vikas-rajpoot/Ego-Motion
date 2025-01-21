@@ -12,20 +12,17 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 pretrained_disp = "/home/vk/03/ThermalSfMLearner/checkpoints/vivid_resnet18_indoor/dispnet_disp_model_best.pth.tar" 
 scene_type = 'indoor' 
 import matplotlib.pyplot as plt
+import os 
 
 
-def main():
-    path = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_dark/Thermal/000004.png" 
-    # path = "/home/vk/03/ThermalSfMLearner/images/02.png" 
-    # path = "images/frame_80.png" 
-    # path = "/home/vk/03/ThermalSfMLearner/ProcessedData/our_data/frame_0441.jpg" 
+def predict(path): 
     thermal_image = np.expand_dims(imread(path).astype(np.float32),  axis=2)     
     
     print(thermal_image.shape) 
     
     
     array_squeezed = np.squeeze(thermal_image, axis=2)
-    np.savetxt("thermal_image.csv", array_squeezed, delimiter=",") 
+    # np.savetxt("thermal_image.csv", array_squeezed, delimiter=",") 
     
     print("\033[92m[INFO]\033[00m Thermal Image Shape: ", thermal_image.shape)  
     # print("\033[92m[INFO]\033[00m Thermal Image Values: \n", thermal_image) 
@@ -53,18 +50,18 @@ def main():
     thermal_image_1, _ = valid_tf_thr([thermal_image], None) 
     thermal_image_2 = thermal_image_1[0]  
     
-    print("\033[92m[INFO]\033[00m Thermal Image 2 Shape: ", thermal_image_2.shape) 
-    print("\033[92m[INFO]\033[00m Thermal Image 2 Type: ", type(thermal_image_2))  
-    print("\033[92m[INFO]\033[00m Thermal Image 2 Values: \n", thermal_image_2) 
+    # print("\033[92m[INFO]\033[00m Thermal Image 2 Shape: ", thermal_image_2.shape) 
+    # print("\033[92m[INFO]\033[00m Thermal Image 2 Type: ", type(thermal_image_2))  
+    # print("\033[92m[INFO]\033[00m Thermal Image 2 Values: \n", thermal_image_2) 
     
     thermal_image_2 = torch.nn.functional.interpolate(thermal_image_2.unsqueeze(0), size=(256, 320), mode='bilinear', align_corners=False) 
 
 
-    print("=> creating model")  
+    # print("=> creating model")  
     disp_net = models.DispResNet(resnet_layers, False, num_channel=1).to(device)
     
     # load parameters 
-    print("=> using pre-trained weights for DispResNet") 
+    # print("=> using pre-trained weights for DispResNet") 
     weights = torch.load(pretrained_disp, map_location=torch.device('cpu'))  
     disp_net.load_state_dict(weights['state_dict'], strict=False) 
     disp_net.eval()  
@@ -72,7 +69,7 @@ def main():
 
     thermal_image_2 = thermal_image_2.to(device) 
 
-    print("\033[92m[INFO]\033[00m thermal_image_2 Shape: ", thermal_image_2.shape) 
+    # print("\033[92m[INFO]\033[00m thermal_image_2 Shape: ", thermal_image_2.shape) 
 
     # compute output 
     with torch.no_grad():
@@ -91,25 +88,41 @@ def main():
     # visualize images 
     
     
-    plt.figure(figsize=(15, 5))
 
-    plt.subplot(1, 3, 1)
-    plt.title("Thermal Image")
-    plt.imshow(thermal_image_2[0, 0].cpu(), cmap='hot')
-    plt.colorbar() 
 
-    plt.subplot(1, 3, 2)
-    plt.title("Depth Image")
-    plt.imshow(depth_image, cmap='rainbow')
-    plt.colorbar()
 
-    plt.subplot(1, 3, 3)
-    plt.title("Output Depth Image")
-    plt.imshow(output_depth, cmap='rainbow') 
-    plt.colorbar()
+    # plt.figure(figsize=(10, 10)) 
+    # fig, ax = plt.subplots()
+    # ax.imshow(output_depth, cmap='viridis')
+    # ax.axis('off')
+    # plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    # plt.savefig('data/output_image.png', bbox_inches='tight', pad_inches=0)
+    # plt.close(fig) 
+    
+    return output_depth 
 
-    plt.savefig("data/output_d.png") 
 
+def main():
+    folder = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_local/Thermal"
+    # path = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_dark/Thermal/000004.png" 
+    count = 0 
+    path_list_1 = sorted(os.listdir(folder))  
+    
+    print(path_list_1) 
+     
+    for file_name in path_list_1:
+        count += 1 
+        file_path = os.path.join(folder, file_name)
+        output_depth = predict(file_path)    
+        
+        plt.figure(figsize=(10, 10)) 
+        fig, ax = plt.subplots()
+        ax.imshow(output_depth, cmap='viridis')
+        ax.axis('off')
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+        plt.savefig('data/output_depth/output_image'+ str(count) +'.png', bbox_inches='tight', pad_inches=0) 
+        plt.close(fig) 
+        
 
 if __name__ == '__main__': 
     main()
