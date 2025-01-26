@@ -7,6 +7,11 @@ import utils.custom_transforms as custom_transforms
 import models 
 from evaluate_depth import evaluate_depth  # Import the evaluation function
 
+import cv2
+import numpy as np
+from flirpy.camera.lepton import Lepton
+
+
 resnet_layers = 18 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu") 
 pretrained_disp = "/home/vk/03/ThermalSfMLearner/checkpoints/vivid_resnet18_indoor/dispnet_disp_model_best.pth.tar" 
@@ -15,8 +20,7 @@ import matplotlib.pyplot as plt
 import os
 
 
-def predict(path): 
-    thermal_image = np.expand_dims(imread(path).astype(np.float32),  axis=2)     
+def predict(thermal_image): 
     
     print(thermal_image.shape) 
     
@@ -68,24 +72,44 @@ def predict(path):
 
 
 def main():
-    folder = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_local/Thermal"
-    count = 0 
-    path_list_1 = sorted(os.listdir(folder))  
-    
-    print(path_list_1) 
-     
-    for file_name in path_list_1:
-        count += 1 
-        file_path = os.path.join(folder, file_name)
-        output_depth = predict(file_path)    
+    camera = Lepton() 
+
+    count = 1
+    while True:
+
+        thermal_image = camera.grab().astype(np.float32)
+        
+        # print("\033[92m [INFO] \033[0m Thermal camera live feed started") 
+        print("\033[92m [INFO] \033[0m image:  ", thermal_image)  
+        print("\033[92m [INFO] \033[0m Shape : ", thermal_image.shape)   
+        print("\033[92m [INFO] \033[0m type: ", type(thermal_image))    
+        
+        print("\033[92m [INFO] \033[0m Press 'ESC' to exit")   
+        
+        thermal_image_1 = thermal_image[:, :, np.newaxis]
+        
+        output_depth = predict(thermal_image_1)   
         
         plt.figure(figsize=(10, 10)) 
         fig, ax = plt.subplots()
         ax.imshow(output_depth, cmap='viridis')
         ax.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-        plt.savefig('data/output_depth/output_image'+ str(count) +'.png', bbox_inches='tight', pad_inches=0) 
+        plt.savefig('data/output_depth_live/output_image'+ str(count) +'.png', bbox_inches='tight', pad_inches=0)  
         plt.close(fig)  
+        
+        
+        thermal_image = cv2.resize(thermal_image, (1080,720), interpolation=cv2.INTER_LINEAR)
+        cv2.imshow('thermal_image',thermal_image) 
+       
+        
+        if cv2.waitKey(1) & 0xFF == 27:
+            break 
+        
+        break 
+        
+        
+    camera.close() 
         
 
 if __name__ == '__main__': 
