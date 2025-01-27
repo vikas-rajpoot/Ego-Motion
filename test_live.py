@@ -3,6 +3,7 @@ import numpy as np
 import sys
 import torch
 sys.path.append('./common/')
+# sys.path.append('/home/vk/03/ThermalSfMLearner')  
 import utils.custom_transforms as custom_transforms 
 import models 
 from evaluate_depth import evaluate_depth  # Import the evaluation function
@@ -10,7 +11,7 @@ from evaluate_depth import evaluate_depth  # Import the evaluation function
 import cv2
 import numpy as np
 from flirpy.camera.lepton import Lepton
-
+from utils_live import images_to_video 
 
 resnet_layers = 18 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu") 
@@ -70,13 +71,13 @@ def predict(thermal_image):
     
     return output_depth 
 
-
 def main():
     camera = Lepton() 
 
-    count = 1
+    count = 0
+    path_imgs = 'data/output_depth_live' 
     while True:
-
+        count += 1 
         thermal_image = camera.grab().astype(np.float32)
         
         # print("\033[92m [INFO] \033[0m Thermal camera live feed started") 
@@ -99,18 +100,23 @@ def main():
         plt.close(fig)  
         
         
-        thermal_image = cv2.resize(thermal_image, (1080,720), interpolation=cv2.INTER_LINEAR)
-        cv2.imshow('thermal_image',thermal_image) 
-       
+        # thermal_image = cv2.resize(thermal_image, (1080,720), interpolation=cv2.INTER_LINEAR)
+        # cv2.imshow('thermal_image',thermal_image) 
+        
+        
+        if count == 250:
+            break 
         
         if cv2.waitKey(1) & 0xFF == 27:
             break 
         
-        break 
+        # break 
         
         
     camera.close() 
-        
+
+    images_to_video(path_imgs, 'data/output_video_live.mp4', fps=10)    
+    
 
 if __name__ == '__main__': 
     main()
