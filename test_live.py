@@ -70,7 +70,10 @@ def predict(thermal_image):
     
     
     return output_depth 
-
+def raw_to_celsius( raw_data):
+    SCALE_FACTOR = 0.01
+    OFFSET = 273.15
+    return (raw_data * SCALE_FACTOR) - OFFSET
 def main():
     camera = Lepton() 
 
@@ -79,29 +82,37 @@ def main():
     while True:
         count += 1 
         thermal_image = camera.grab().astype(np.float32)
+        thermal_image_celsius = raw_to_celsius(thermal_image)
+        # thermal_image_celsius_clipped = np.clip(thermal_image_celsius, self.min_temp, self.max_temp)
+
+        normalized_img = cv2.normalize(
+            thermal_image_celsius, None, 0, 255, cv2.NORM_MINMAX
+        )
+        normalized_img = np.uint8(normalized_img)
+        color_mapped_img = cv2.applyColorMap(normalized_img, cv2.COLORMAP_JET)
         
-        # print("\033[92m [INFO] \033[0m Thermal camera live feed started") 
-        print("\033[92m [INFO] \033[0m image:  ", thermal_image)  
-        print("\033[92m [INFO] \033[0m Shape : ", thermal_image.shape)   
-        print("\033[92m [INFO] \033[0m type: ", type(thermal_image))    
+        # # print("\033[92m [INFO] \033[0m Thermal camera live feed started") 
+        # print("\033[92m [INFO] \033[0m image:  ", thermal_image)  
+        # print("\033[92m [INFO] \033[0m Shape : ", thermal_image.shape)   
+        # print("\033[92m [INFO] \033[0m type: ", type(thermal_image))    
         
-        print("\033[92m [INFO] \033[0m Press 'ESC' to exit")   
+        # print("\033[92m [INFO] \033[0m Press 'ESC' to exit")   
         
         thermal_image_1 = thermal_image[:, :, np.newaxis]
         
-        output_depth = predict(thermal_image_1)   
+        # output_depth = predict(thermal_image_1)   
         
         plt.figure(figsize=(10, 10)) 
         fig, ax = plt.subplots()
-        ax.imshow(output_depth, cmap='viridis')
+        # ax.imshow(output_depth, cmap='viridis')
         ax.axis('off')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-        plt.savefig('data/output_depth_live/output_image'+ str(count) +'.png', bbox_inches='tight', pad_inches=0)  
+        # plt.savefig('data/output_depth_live/output_image'+ str(count) +'.png', bbox_inches='tight', pad_inches=0)  
         plt.close(fig)  
         
         
         # thermal_image = cv2.resize(thermal_image, (1080,720), interpolation=cv2.INTER_LINEAR)
-        # cv2.imshow('thermal_image',thermal_image) 
+        cv2.imshow('thermal_image',color_mapped_img) 
         
         
         if count == 250:
