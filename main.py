@@ -39,7 +39,7 @@ r21, r22, r23 = df_global_pose['r21'], df_global_pose['r22'], df_global_pose['r2
 r31, r32, r33 = df_global_pose['r31'], df_global_pose['r32'], df_global_pose['r33']
 
 # Apply smoothing (moving average with a window size of 5)
-window_size = 5 
+window_size = 1
 x_smooth = moving_average(x, window_size)
 y_smooth = moving_average(y, window_size)
 z_smooth = moving_average(z, window_size)
