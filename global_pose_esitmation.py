@@ -94,6 +94,11 @@ def main():
 
     df_pose = pd.DataFrame(columns=['tx', 'ty', 'tz', 'rx', 'ry', 'rz']) 
 
+    # Initialize a DataFrame to save poses
+    df_global_pose = pd.DataFrame(columns=['frame', 'tx', 'ty', 'tz', 'r11', 'r12', 'r13', 
+                                        'r21', 'r22', 'r23', 'r31', 'r32', 'r33'])
+
+
     for j, sample in enumerate(tqdm(framework)):
         print("\033[92m [INFO] \033[0m j : ", j) 
         imgs = sample['imgs'] 
@@ -113,7 +118,6 @@ def main():
             pose = pose_net(squence_imgs[iter], squence_imgs[iter + 1])   
             
             # pose return by this is in format to tx, ty, tz, rx, ry, rz. 
-            
             pose_1 = pose.unsqueeze(1).tolist()[0][0] 
 
             df_pose.loc[len(df_pose)] = pose_1             
@@ -130,6 +134,12 @@ def main():
             poses.append(global_pose[0:3, :])   
             print("\033[92m [INFO] \033[0m poses len : ", len(poses))   
             print("\033[92m [INFO] \033[0m poses poses : ", poses)   
+            
+            # Save the global_pose matrix
+            translation = global_pose[:3, 3]
+            rotation = global_pose[:3, :3].flatten()
+            df_global_pose.loc[len(df_global_pose)] = [iter] + translation.tolist() + rotation.tolist() 
+
 
         final_poses = np.stack(poses, axis=0)  
         # print("\033[92m [INFO] \033[0m final_poses : ", final_poses) 
@@ -141,9 +151,10 @@ def main():
         ATE, RE = compute_pose_error(sample['poses'], final_poses)
         errors[j] = ATE, RE
         
-        break 
+        # break 
     
     df_pose.to_csv("./data/pose.csv", index=False)  
+    df_global_pose.to_csv("./data/global_pose.csv", index=False) 
     
     
     

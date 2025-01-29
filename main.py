@@ -1,4 +1,19 @@
-import plotly.graph_objects as go
+import os 
+import numpy as np 
+import pandas as pd 
+path = "/home/vk/03/ThermalSfMLearner/ProcessedData/indoor_robust_global/poses_T.txt"  
+
+
+df_global_pose = pd.read_csv(path, header=None, sep=' ') 
+
+df_global_pose.columns = ['tx', 'ty', 'tz', 'r11', 'r12', 'r13', 
+                                        'r21', 'r22', 'r23', 'r31', 'r32', 'r33']
+
+print("data frame : ",df_global_pose.head()) 
+
+print(df_global_pose.shape) 
+
+import plotly.graph_objects as go 
 import pandas as pd
 import numpy as np
 
@@ -8,10 +23,10 @@ def moving_average(data, window_size):
     """Smooth data using a moving average filter."""
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
-# Load the pose data 
-df_global_pose = pd.read_csv("./data/global_pose.csv") 
+# # Load the pose data 
+# df_global_pose = pd.read_csv("./data/global_pose.csv") 
 
-print("df global pose : ",df_global_pose.columns)  
+# print("df global pose : ",df_global_pose.columns)  
 
 # Extract translation (position) and rotation (orientation) data
 x = df_global_pose['tx']
@@ -24,7 +39,7 @@ r21, r22, r23 = df_global_pose['r21'], df_global_pose['r22'], df_global_pose['r2
 r31, r32, r33 = df_global_pose['r31'], df_global_pose['r32'], df_global_pose['r33']
 
 # Apply smoothing (moving average with a window size of 5)
-window_size = 200
+window_size = 5 
 x_smooth = moving_average(x, window_size)
 y_smooth = moving_average(y, window_size)
 z_smooth = moving_average(z, window_size)
@@ -40,7 +55,7 @@ u = r11_smooth * arrow_length
 v = r21_smooth * arrow_length
 w = r31_smooth * arrow_length
 
-# Create 3D plot 
+# Create 3D plot
 fig = go.Figure()
 
 # Add trajectory line (smoothed)
@@ -70,8 +85,8 @@ fig.add_trace(
 )
 
 # Customize layout
-fig.update_layout( 
-    title="predicted_camera_trajectory_pose",
+fig.update_layout(
+    title="actual_camera_trajectory_pose", 
     scene=dict(
         xaxis_title="X (Position)",
         yaxis_title="Y (Position)",
@@ -84,11 +99,10 @@ fig.update_layout(
 )
 
 # Show the plot
-# fig.show()
+# fig.show() 
 
-fig.write_html("./data/predicted_camera_trajectory_pose.html")
+fig.write_html("./data/actual_camera_trajectory_pose.html")
 print("Plot saved as camera_trajectory.html")
-
 
 
 
